@@ -6,48 +6,92 @@
  */
 import { HTMLStencilElement, JSXBase } from "@stencil/core/internal";
 export namespace Components {
-    interface XleEquipmentList {
+    interface MyComponent {
+        /**
+          * The first name
+         */
+        "first": string;
+        /**
+          * The last name
+         */
+        "last": string;
+        /**
+          * The middle name
+         */
+        "middle": string;
+    }
+    interface XleEquipList {
     }
 }
-export interface XleEquipmentListCustomEvent<T> extends CustomEvent<T> {
+export interface XleEquipListCustomEvent<T> extends CustomEvent<T> {
     detail: T;
-    target: HTMLXleEquipmentListElement;
+    target: HTMLXleEquipListElement;
 }
 declare global {
-    interface HTMLXleEquipmentListElementEventMap {
+    interface HTMLMyComponentElement extends Components.MyComponent, HTMLStencilElement {
+    }
+    var HTMLMyComponentElement: {
+        prototype: HTMLMyComponentElement;
+        new (): HTMLMyComponentElement;
+    };
+    interface HTMLXleEquipListElementEventMap {
         "entry-clicked": string;
     }
-    interface HTMLXleEquipmentListElement extends Components.XleEquipmentList, HTMLStencilElement {
-        addEventListener<K extends keyof HTMLXleEquipmentListElementEventMap>(type: K, listener: (this: HTMLXleEquipmentListElement, ev: XleEquipmentListCustomEvent<HTMLXleEquipmentListElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+    interface HTMLXleEquipListElement extends Components.XleEquipList, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLXleEquipListElementEventMap>(type: K, listener: (this: HTMLXleEquipListElement, ev: XleEquipListCustomEvent<HTMLXleEquipListElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
         addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
         addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
         addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
-        removeEventListener<K extends keyof HTMLXleEquipmentListElementEventMap>(type: K, listener: (this: HTMLXleEquipmentListElement, ev: XleEquipmentListCustomEvent<HTMLXleEquipmentListElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLXleEquipListElementEventMap>(type: K, listener: (this: HTMLXleEquipListElement, ev: XleEquipListCustomEvent<HTMLXleEquipListElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
         removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
         removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
         removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
     }
-    var HTMLXleEquipmentListElement: {
-        prototype: HTMLXleEquipmentListElement;
-        new (): HTMLXleEquipmentListElement;
+    var HTMLXleEquipListElement: {
+        prototype: HTMLXleEquipListElement;
+        new (): HTMLXleEquipListElement;
     };
     interface HTMLElementTagNameMap {
-        "xle-equipment-list": HTMLXleEquipmentListElement;
+        "my-component": HTMLMyComponentElement;
+        "xle-equip-list": HTMLXleEquipListElement;
     }
 }
 declare namespace LocalJSX {
-    interface XleEquipmentList {
-        "onEntry-clicked"?: (event: XleEquipmentListCustomEvent<string>) => void;
+    interface MyComponent {
+        /**
+          * The first name
+         */
+        "first"?: string;
+        /**
+          * The last name
+         */
+        "last"?: string;
+        /**
+          * The middle name
+         */
+        "middle"?: string;
     }
+    interface XleEquipList {
+        "onEntry-clicked"?: (event: XleEquipListCustomEvent<string>) => void;
+    }
+
+    interface MyComponentAttributes {
+        "first": string;
+        "middle": string;
+        "last": string;
+    }
+
     interface IntrinsicElements {
-        "xle-equipment-list": XleEquipmentList;
+        "my-component": Omit<MyComponent, keyof MyComponentAttributes> & { [K in keyof MyComponent & keyof MyComponentAttributes]?: MyComponent[K] } & { [K in keyof MyComponent & keyof MyComponentAttributes as `attr:${K}`]?: MyComponentAttributes[K] } & { [K in keyof MyComponent & keyof MyComponentAttributes as `prop:${K}`]?: MyComponent[K] };
+        "xle-equip-list": XleEquipList;
     }
 }
 export { LocalJSX as JSX };
 declare module "@stencil/core" {
     export namespace JSX {
         interface IntrinsicElements {
-            "xle-equipment-list": LocalJSX.IntrinsicElements["xle-equipment-list"] & JSXBase.HTMLAttributes<HTMLXleEquipmentListElement>;
+            "my-component": LocalJSX.IntrinsicElements["my-component"] & JSXBase.HTMLAttributes<HTMLMyComponentElement>;
+            "xle-equip-list": LocalJSX.IntrinsicElements["xle-equip-list"] & JSXBase.HTMLAttributes<HTMLXleEquipListElement>;
         }
     }
 }

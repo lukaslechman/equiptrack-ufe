@@ -1,19 +1,14 @@
 import { Component, Host, Event, EventEmitter, h } from '@stencil/core';
-import '@material/web/list/list';
-import '@material/web/list/list-item';
-import '@material/web/icon/icon';
-import '@material/web/fab/fab';
-
 @Component({
-  tag: 'xle-equipment-list',
-  styleUrl: 'xle-equipment-list.css',
+  tag: 'xle-equip-list',
+  styleUrl: 'xle-equip-list.css',
   shadow: true,
 })
-export class XleEquipmentList {
+export class XleEquipList {
 
   @Event({ eventName: "entry-clicked" }) entryClicked: EventEmitter<string>;
 
-  equipment: any[];
+  equipment: any[] = [];;
 
   private async getEquipmentAsync() {
     return await Promise.resolve([
@@ -69,7 +64,7 @@ export class XleEquipmentList {
     return (
       <Host>
         <md-list>
-          {this.equipment.map(item =>
+          {this.equipment?.map(item =>
             <md-list-item onClick={() => this.entryClicked.emit(item.id)}>
               <div slot="headline">{item.name}</div>
               <div slot="supporting-text">
@@ -86,7 +81,7 @@ export class XleEquipmentList {
         </md-list>
 
         <md-filled-icon-button class="add-button"
-          onclick={() => this.entryClicked.emit("@new")}>
+          onClick={() => this.entryClicked.emit("@new")}>
           <md-icon>add</md-icon>
         </md-filled-icon-button>
       </Host>

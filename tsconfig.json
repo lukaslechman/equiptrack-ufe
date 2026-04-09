@@ -11,15 +11,11 @@
     "moduleResolution": "bundler",
     "module": "esnext",
     "target": "es2022",
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "rootDir": "./",
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
     "jsx": "react",
     "jsxFactory": "h",
-    "jsxFragmentFactory": "h.Fragment",
-    "types": [
-      "@stencil/vitest/globals"
-    ]
+    "jsxFragmentFactory": "h.Fragment"
   },
   "include": [
     "src"

@@ -23,7 +23,7 @@
       "types": "./loader/index.d.ts"
     }
   },
-  "repository": {
+    "repository": {
     "type": "git",
     "url": "https://github.com/stenciljs/component-starter.git"
   },
@@ -32,19 +32,30 @@
     "loader/"
   ],
   "scripts": {
+    "convert-openapi": "js-yaml  ./api/equiptrack.openapi.yaml > .openapi.json",
+    "mock-api": "open-api-mocker --schema .openapi.json --port 5000",
+    "start:app": "stencil build --dev --watch --serve",
+    "start:mock": "run-s convert-openapi mock-api",
+    "start": "run-p -r start:mock start:app",
     "build": "stencil build",
-    "start": "stencil build --dev --watch --serve",
-    "test": "stencil-test",
-    "test:watch": "stencil-test --watch",
-    "generate": "stencil generate"
+    "test": "stencil test --spec --e2e",
+    "test.watch": "stencil test --spec --e2e --watchAll",
+    "generate": "stencil generate",
+    "openapi": "openapi-generator-cli generate",
+    "test:jest": "jest --config ./jest.config.js"
   },
   "devDependencies": {
-    "@stencil/core": "^4.27.1 || ^5.0.0-0",
-    "@stencil/vitest": "^1.8.3",
+    "@openapitools/openapi-generator-cli": "^2.30.2",
+    "@stencil/core": "^4.27.1",
+    "@types/jest": "^29.5.14",
     "@types/node": "^22.13.5",
-    "@vitest/browser-playwright": "^4.0.0",
-    "playwright": "^1.52.0",
-    "vitest": "^4.0.0"
+    "jest": "^29.7.0",
+    "jest-cli": "^29.7.0",
+    "jest-fetch-mock": "^3.0.3",
+    "js-yaml": "^4.1.1",
+    "npm-run-all": "^4.1.5",
+    "open-api-mocker": "^2.0.0",
+    "puppeteer": "^24.3.0"
   },
   "license": "MIT",
   "dependencies": {
