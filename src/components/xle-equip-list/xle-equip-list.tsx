@@ -1,9 +1,11 @@
 import { Component, Host, Event, EventEmitter, h } from '@stencil/core';
+
 @Component({
   tag: 'xle-equip-list',
   styleUrl: 'xle-equip-list.css',
   shadow: true,
 })
+
 export class XleEquipList {
 
   @Event({ eventName: "entry-clicked" }) entryClicked: EventEmitter<string>;

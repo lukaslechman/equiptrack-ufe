@@ -32,17 +32,11 @@
     "loader/"
   ],
   "scripts": {
-    "convert-openapi": "js-yaml  ./api/equiptrack.openapi.yaml > .openapi.json",
-    "mock-api": "open-api-mocker --schema .openapi.json --port 5000",
-    "start:app": "stencil build --dev --watch --serve",
-    "start:mock": "run-s convert-openapi mock-api",
-    "start": "run-p -r start:mock start:app",
     "build": "stencil build",
+    "start": "stencil build --dev --watch --serve",
     "test": "stencil test --spec --e2e",
     "test.watch": "stencil test --spec --e2e --watchAll",
-    "generate": "stencil generate",
-    "openapi": "openapi-generator-cli generate",
-    "test:jest": "jest --config ./jest.config.js"
+    "generate": "stencil generate"
   },
   "devDependencies": {
     "@openapitools/openapi-generator-cli": "^2.30.2",
