@@ -20,8 +20,23 @@ export namespace Components {
          */
         "middle": string;
     }
+    interface XleEquipApp {
+        "apiBase": string;
+        /**
+          * @default ""
+         */
+        "basePath": string;
+    }
+    interface XleEquipEditor {
+        "apiBase": string;
+        "entryId": string;
+    }
     interface XleEquipList {
     }
+}
+export interface XleEquipEditorCustomEvent<T> extends CustomEvent<T> {
+    detail: T;
+    target: HTMLXleEquipEditorElement;
 }
 export interface XleEquipListCustomEvent<T> extends CustomEvent<T> {
     detail: T;
@@ -33,6 +48,29 @@ declare global {
     var HTMLMyComponentElement: {
         prototype: HTMLMyComponentElement;
         new (): HTMLMyComponentElement;
+    };
+    interface HTMLXleEquipAppElement extends Components.XleEquipApp, HTMLStencilElement {
+    }
+    var HTMLXleEquipAppElement: {
+        prototype: HTMLXleEquipAppElement;
+        new (): HTMLXleEquipAppElement;
+    };
+    interface HTMLXleEquipEditorElementEventMap {
+        "editor-closed": string;
+    }
+    interface HTMLXleEquipEditorElement extends Components.XleEquipEditor, HTMLStencilElement {
+        addEventListener<K extends keyof HTMLXleEquipEditorElementEventMap>(type: K, listener: (this: HTMLXleEquipEditorElement, ev: XleEquipEditorCustomEvent<HTMLXleEquipEditorElementEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
+        addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLXleEquipEditorElementEventMap>(type: K, listener: (this: HTMLXleEquipEditorElement, ev: XleEquipEditorCustomEvent<HTMLXleEquipEditorElementEventMap[K]>) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof DocumentEventMap>(type: K, listener: (this: Document, ev: DocumentEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
+        removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+    }
+    var HTMLXleEquipEditorElement: {
+        prototype: HTMLXleEquipEditorElement;
+        new (): HTMLXleEquipEditorElement;
     };
     interface HTMLXleEquipListElementEventMap {
         "entry-clicked": string;
@@ -53,6 +91,8 @@ declare global {
     };
     interface HTMLElementTagNameMap {
         "my-component": HTMLMyComponentElement;
+        "xle-equip-app": HTMLXleEquipAppElement;
+        "xle-equip-editor": HTMLXleEquipEditorElement;
         "xle-equip-list": HTMLXleEquipListElement;
     }
 }
@@ -71,6 +111,18 @@ declare namespace LocalJSX {
          */
         "middle"?: string;
     }
+    interface XleEquipApp {
+        "apiBase"?: string;
+        /**
+          * @default ""
+         */
+        "basePath"?: string;
+    }
+    interface XleEquipEditor {
+        "apiBase"?: string;
+        "entryId"?: string;
+        "onEditor-closed"?: (event: XleEquipEditorCustomEvent<string>) => void;
+    }
     interface XleEquipList {
         "onEntry-clicked"?: (event: XleEquipListCustomEvent<string>) => void;
     }
@@ -80,9 +132,19 @@ declare namespace LocalJSX {
         "middle": string;
         "last": string;
     }
+    interface XleEquipAppAttributes {
+        "basePath": string;
+        "apiBase": string;
+    }
+    interface XleEquipEditorAttributes {
+        "entryId": string;
+        "apiBase": string;
+    }
 
     interface IntrinsicElements {
         "my-component": Omit<MyComponent, keyof MyComponentAttributes> & { [K in keyof MyComponent & keyof MyComponentAttributes]?: MyComponent[K] } & { [K in keyof MyComponent & keyof MyComponentAttributes as `attr:${K}`]?: MyComponentAttributes[K] } & { [K in keyof MyComponent & keyof MyComponentAttributes as `prop:${K}`]?: MyComponent[K] };
+        "xle-equip-app": Omit<XleEquipApp, keyof XleEquipAppAttributes> & { [K in keyof XleEquipApp & keyof XleEquipAppAttributes]?: XleEquipApp[K] } & { [K in keyof XleEquipApp & keyof XleEquipAppAttributes as `attr:${K}`]?: XleEquipAppAttributes[K] } & { [K in keyof XleEquipApp & keyof XleEquipAppAttributes as `prop:${K}`]?: XleEquipApp[K] };
+        "xle-equip-editor": Omit<XleEquipEditor, keyof XleEquipEditorAttributes> & { [K in keyof XleEquipEditor & keyof XleEquipEditorAttributes]?: XleEquipEditor[K] } & { [K in keyof XleEquipEditor & keyof XleEquipEditorAttributes as `attr:${K}`]?: XleEquipEditorAttributes[K] } & { [K in keyof XleEquipEditor & keyof XleEquipEditorAttributes as `prop:${K}`]?: XleEquipEditor[K] };
         "xle-equip-list": XleEquipList;
     }
 }
@@ -91,6 +153,8 @@ declare module "@stencil/core" {
     export namespace JSX {
         interface IntrinsicElements {
             "my-component": LocalJSX.IntrinsicElements["my-component"] & JSXBase.HTMLAttributes<HTMLMyComponentElement>;
+            "xle-equip-app": LocalJSX.IntrinsicElements["xle-equip-app"] & JSXBase.HTMLAttributes<HTMLXleEquipAppElement>;
+            "xle-equip-editor": LocalJSX.IntrinsicElements["xle-equip-editor"] & JSXBase.HTMLAttributes<HTMLXleEquipEditorElement>;
             "xle-equip-list": LocalJSX.IntrinsicElements["xle-equip-list"] & JSXBase.HTMLAttributes<HTMLXleEquipListElement>;
         }
     }
