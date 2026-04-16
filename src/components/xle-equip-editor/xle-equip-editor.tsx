@@ -1,4 +1,6 @@
 import { Component, Host, Prop, State, Event, EventEmitter, h } from '@stencil/core';
+import { EquipmentRegistryApi, Equipment, Configuration,   EquipmentStatus,EquipmentStatusUpdate} from '../../api/equipment-registry';
+
 
 @Component({
   tag: 'xle-equip-editor',
@@ -15,72 +17,37 @@ export class XleEquipEditor {
   @State() errorMessage: string;
   @State() isValid: boolean = false;
   @State() showArchiveDialog: boolean = false;
+  @State() showDeleteDialog: boolean = false; 
 
   private formElement: HTMLFormElement;
 
-  // statické mock dáta – rovnaký princíp ako v list
-  private async getEquipmentAsync(id: string): Promise<any> {
-    const mockData = [
-      {
-        id: '1',
-        name: 'Röntgen EVO-3000',
-        category: 'imaging',
-        manufacturer: 'Siemens',
-        serialNumber: 'RX-2021-00123',
-        purchaseDate: '2021-03-15',
-        warrantyUntil: '2024-03-15',
-        lifespanYears: 10,
-        purchasePrice: 85000,
-        status: 'active',
-        note: '',
-        location: { building: 'Budova A', department: 'Rádiológia', room: 'M-12' },
-      },
-      {
-        id: '2',
-        name: 'EKG Monitor CardioLife',
-        category: 'monitoring',
-        manufacturer: 'Philips',
-        serialNumber: 'CL-2019-00456',
-        purchaseDate: '2019-07-20',
-        warrantyUntil: '2022-07-20',
-        lifespanYears: 8,
-        purchasePrice: 12000,
-        status: 'damaged',
-        note: 'Poškodený displej',
-        location: { building: 'Budova B', department: 'Kardiológia', room: 'M-03' },
-      },
-    ];
-    return mockData.find(e => e.id === id) || null;
+async componentWillLoad() {
+  if (this.entryId === "@new") {
+    this.entry = {
+      id: "@new", name: "", category: "imaging",
+      manufacturer: "", serialNumber: "",
+      purchaseDate: "", status: "active", note: "",
+      location: { building: "", department: "", room: "" }
+    };
+    this.isValid = false;
+    return;
   }
 
-  async componentWillLoad() {
-    if (this.entryId === "@new") {
-      this.entry = {
-        id: "@new",
-        name: "",
-        category: "",
-        manufacturer: "",
-        serialNumber: "",
-        purchaseDate: "",
-        warrantyUntil: "",
-        lifespanYears: 5,
-        purchasePrice: 0,
-        status: "active",
-        note: "",
-        location: { building: "", department: "", room: "" }
-      };
-      this.isValid = false;
-      return;
-    }
-
-    const result = await this.getEquipmentAsync(this.entryId);
-    if (result) {
-      this.entry = result;
+  try {
+    const api = new EquipmentRegistryApi(
+      new Configuration({ basePath: this.apiBase })
+    );
+    const response = await api.getEquipmentRaw({ equipmentId: this.entryId });
+    if (response.raw.status < 299) {
+      this.entry = await response.value();
       this.isValid = true;
     } else {
-      this.errorMessage = `Vybavenie s ID ${this.entryId} sa nenašlo.`;
+      this.errorMessage = `Nepodarilo sa načítať záznam: ${response.raw.statusText}`;
     }
+  } catch (err: any) {
+    this.errorMessage = `Nepodarilo sa načítať záznam: ${err.message || "unknown"}`;
   }
+}
 
   private handleInput(field: string, value: string) {
     this.entry = { ...this.entry, [field]: value };
@@ -114,20 +81,64 @@ export class XleEquipEditor {
     return this.isValid;
   }
 
-  private async saveEntry() {
-    if (!this.validateForm('show-errors')) return;
+private async saveEntry() {
+  if (!this.validateForm('show-errors')) return;
+  try {
+    const api = new EquipmentRegistryApi(
+      new Configuration({ basePath: this.apiBase })
+    );
+    const response = this.entryId === "@new"
+      ? await api.createEquipmentRaw({ equipment: this.entry })
+      : await api.updateEquipmentRaw({ equipmentId: this.entryId, equipment: this.entry });
 
-    // neskôr → API volanie
-    console.log(this.entryId === "@new" ? "CREATE:" : "UPDATE:", this.entry);
-    this.editorClosed.emit("store");
+    if (response.raw.status < 299) {
+      this.editorClosed.emit("store");
+    } else {
+      this.errorMessage = `Nepodarilo sa uložiť: ${response.raw.statusText}`;
+    }
+  } catch (err: any) {
+    this.errorMessage = `Nepodarilo sa uložiť: ${err.message || "unknown"}`;
   }
+}
 
-  private async archiveEntry() {
-    // neskôr → PATCH status na "decommissioned"
-    console.log("ARCHIVE:", this.entryId);
-    this.showArchiveDialog = false;
-    this.editorClosed.emit("archive");
+private async archiveEntry() {
+  try {
+    const api = new EquipmentRegistryApi(
+      new Configuration({ basePath: this.apiBase })
+    );
+    const response = await api.updateEquipmentStatusRaw({
+      equipmentId: this.entryId,
+      equipmentStatusUpdate: { status: EquipmentStatus.Decommissioned }
+    });
+    if (response.raw.status < 299) {
+      this.showArchiveDialog = false;
+      this.editorClosed.emit("archive");
+    } else {
+      this.errorMessage = `Nepodarilo sa vyradiť: ${response.raw.statusText}`;
+    }
+  } catch (err: any) {
+    this.errorMessage = `Nepodarilo sa vyradiť: ${err.message || "unknown"}`;
   }
+}
+
+private async deleteEntry() {
+  try {
+    const api = new EquipmentRegistryApi(
+      new Configuration({ basePath: this.apiBase })
+    );
+    const response = await api.deleteEquipmentRaw({
+      equipmentId: this.entryId
+    });
+    if (response.raw.status < 299) {
+      this.showDeleteDialog = false;
+      this.editorClosed.emit("delete");
+    } else {
+      this.errorMessage = `Nepodarilo sa zmazať: ${response.raw.statusText}`;
+    }
+  } catch (err: any) {
+    this.errorMessage = `Nepodarilo sa zmazať: ${err.message || "unknown"}`;
+  }
+}
 
 
   render() {
@@ -233,6 +244,7 @@ export class XleEquipEditor {
 
             <md-filled-text-field
               label="Životnosť (roky)" type="number"
+              min="2"
               value={String(this.entry?.lifespanYears)}
               oninput={(ev: InputEvent) =>
                 this.handleInput('lifespanYears', (ev.target as HTMLInputElement).value)
@@ -242,6 +254,7 @@ export class XleEquipEditor {
 
             <md-filled-text-field
               label="Obstarávacia cena (€)" type="number"
+              min="50"
               value={String(this.entry?.purchasePrice)}
               oninput={(ev: InputEvent) =>
                 this.handleInput('purchasePrice', (ev.target as HTMLInputElement).value)
@@ -309,6 +322,13 @@ export class XleEquipEditor {
             Vyradiť
           </md-filled-tonal-button>
 
+          <md-filled-tonal-button class="btn-delete"
+            disabled={!this.entry || this.entryId === "@new"}
+            onClick={() => this.showDeleteDialog = true}>
+            <md-icon slot="icon">delete</md-icon>
+            Zmazať
+          </md-filled-tonal-button>
+
           <span class="stretch-fill"></span>
 
           <md-outlined-button onClick={() => this.editorClosed.emit("cancel")}>
@@ -335,6 +355,25 @@ export class XleEquipEditor {
               </md-outlined-button>
               <md-filled-button onClick={() => this.archiveEntry()}>
                 Potvrdiť
+              </md-filled-button>
+            </div>
+          </md-dialog>
+        )}
+
+        {this.showDeleteDialog && (
+          <md-dialog open>
+            <div slot="headline">Zmazať vybavenie?</div>
+            <div slot="content">
+              Záznam bude <strong>natrvalo vymazaný</strong> z evidencie.
+              Táto akcia je nevratná.
+            </div>
+            <div slot="actions">
+              <md-outlined-button onClick={() => this.showDeleteDialog = false}>
+                Zrušiť
+              </md-outlined-button>
+              <md-filled-button onClick={() => this.deleteEntry()}>
+                <md-icon slot="icon">delete</md-icon>
+                Zmazať
               </md-filled-button>
             </div>
           </md-dialog>

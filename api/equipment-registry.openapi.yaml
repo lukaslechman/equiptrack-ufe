@@ -130,11 +130,43 @@ paths:
         "404":
           description: Equipment with such ID does not exist
 
+    patch:
+      tags:
+        - equipmentRegistry
+      summary: Updates equipment status (e.g. decommission)
+      operationId: updateEquipmentStatus
+      parameters:
+        - in: path
+          name: equipmentId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EquipmentStatusUpdate"
+            example:
+              status: decommissioned
+      responses:
+        "200":
+          description: Status updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Equipment"
+              examples:
+                response:
+                  $ref: "#/components/examples/EquipmentExample"
+        "404":
+          description: Equipment with such ID does not exist
+
     delete:
       tags:
         - equipmentRegistry
-      summary: Decommissions equipment (archives it)
-      operationId: decommissionEquipment
+      summary: Permanently deletes equipment record
+      operationId: deleteEquipment
       parameters:
         - in: path
           name: equipmentId
@@ -143,7 +175,7 @@ paths:
             type: string
       responses:
         "204":
-          description: Equipment decommissioned
+          description: Equipment permanently deleted
         "404":
           description: Equipment with such ID does not exist
 
@@ -191,11 +223,21 @@ components:
         location:
           $ref: "#/components/schemas/Location"
 
+    EquipmentStatusUpdate:
+      type: object
+      required: [status]
+      properties:
+        status:
+          $ref: "#/components/schemas/EquipmentStatus"
+      example:
+        status: decommissioned
+
     EquipmentStatus:
       type: string
       enum: [active, damaged, decommissioned]
       example: active
 
+        
     Location:
       type: object
       required: [building, department, room]

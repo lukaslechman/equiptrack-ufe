@@ -1,4 +1,6 @@
-import { Component, Host, Event, EventEmitter, h } from '@stencil/core';
+import { Component, Host, Event,Prop,State, EventEmitter, h } from '@stencil/core';
+import { EquipmentRegistryApi, Equipment, Configuration } from '../../api/equipment-registry';
+
 
 @Component({
   tag: 'xle-equip-list',
@@ -7,46 +9,26 @@ import { Component, Host, Event, EventEmitter, h } from '@stencil/core';
 })
 
 export class XleEquipList {
-
   @Event({ eventName: "entry-clicked" }) entryClicked: EventEmitter<string>;
+  @Prop() apiBase: string;
+  @State() errorMessage: string;
 
-  equipment: any[] = [];;
+  equipment: Equipment[];
 
-  private async getEquipmentAsync() {
-    return await Promise.resolve([
-      {
-        id: '1',
-        name: 'Röntgen EVO-3000',
-        category: 'Zobrazovacie prístroje',
-        serialNumber: 'RX-2021-00123',
-        status: 'active',
-        location: { building: 'Budova A', department: 'Rádiológia', room: 'M-12' },
-      },
-      {
-        id: '2',
-        name: 'EKG Monitor CardioLife',
-        category: 'Monitorovacie prístroje',
-        serialNumber: 'CL-2019-00456',
-        status: 'damaged',
-        location: { building: 'Budova B', department: 'Kardiológia', room: 'M-03' },
-      },
-      {
-        id: '3',
-        name: 'Infúzna pumpa InfuMed',
-        category: 'Infúzna technika',
-        serialNumber: 'IM-2020-00789',
-        status: 'active',
-        location: { building: 'Budova A', department: 'Chirurgia', room: 'M-07' },
-      },
-      {
-        id: '4',
-        name: 'Defibrilátor ShockPro',
-        category: 'Záchranárska technika',
-        serialNumber: 'SP-2018-00321',
-        status: 'decommissioned',
-        location: { building: 'Budova C', department: 'OAIM', room: 'M-01' },
-      },
-    ]);
+  private async getEquipmentAsync(): Promise<Equipment[]> {
+    try {
+      const configuration = new Configuration({ basePath: this.apiBase });
+      const api = new EquipmentRegistryApi(configuration);
+      const response = await api.listEquipmentRaw({});
+      if (response.raw.status < 299) {
+        return await response.value();
+      } else {
+        this.errorMessage = `Nepodarilo sa načítať vybavenie: ${response.raw.statusText}`;
+      }
+    } catch (err: any) {
+      this.errorMessage = `Nepodarilo sa načítať vybavenie: ${err.message || "unknown"}`;
+    }
+    return [];
   }
 
   async componentWillLoad() {

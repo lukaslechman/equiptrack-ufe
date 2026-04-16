@@ -1,0 +1,18 @@
+{
+  "$schema": "./node_modules/@openapitools/openapi-generator-cli/config.schema.json",
+  "generator-cli": {
+    "useDocker": true,
+    "version": "6.6.0",
+    "generators": {
+      "equipment-registry": {
+        "generatorName": "typescript-fetch",
+        "glob": "api/equipment-registry.openapi.yaml",
+        "output": "#{cwd}/src/api/equipment-registry",
+        "additionalProperties": {
+          "supportsES6": "true",
+          "withInterfaces": true
+        }
+      }
+    }
+  }
+}

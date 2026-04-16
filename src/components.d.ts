@@ -32,6 +32,7 @@ export namespace Components {
         "entryId": string;
     }
     interface XleEquipList {
+        "apiBase": string;
     }
 }
 export interface XleEquipEditorCustomEvent<T> extends CustomEvent<T> {
@@ -124,6 +125,7 @@ declare namespace LocalJSX {
         "onEditor-closed"?: (event: XleEquipEditorCustomEvent<string>) => void;
     }
     interface XleEquipList {
+        "apiBase"?: string;
         "onEntry-clicked"?: (event: XleEquipListCustomEvent<string>) => void;
     }
 
@@ -140,12 +142,15 @@ declare namespace LocalJSX {
         "entryId": string;
         "apiBase": string;
     }
+    interface XleEquipListAttributes {
+        "apiBase": string;
+    }
 
     interface IntrinsicElements {
         "my-component": Omit<MyComponent, keyof MyComponentAttributes> & { [K in keyof MyComponent & keyof MyComponentAttributes]?: MyComponent[K] } & { [K in keyof MyComponent & keyof MyComponentAttributes as `attr:${K}`]?: MyComponentAttributes[K] } & { [K in keyof MyComponent & keyof MyComponentAttributes as `prop:${K}`]?: MyComponent[K] };
         "xle-equip-app": Omit<XleEquipApp, keyof XleEquipAppAttributes> & { [K in keyof XleEquipApp & keyof XleEquipAppAttributes]?: XleEquipApp[K] } & { [K in keyof XleEquipApp & keyof XleEquipAppAttributes as `attr:${K}`]?: XleEquipAppAttributes[K] } & { [K in keyof XleEquipApp & keyof XleEquipAppAttributes as `prop:${K}`]?: XleEquipApp[K] };
         "xle-equip-editor": Omit<XleEquipEditor, keyof XleEquipEditorAttributes> & { [K in keyof XleEquipEditor & keyof XleEquipEditorAttributes]?: XleEquipEditor[K] } & { [K in keyof XleEquipEditor & keyof XleEquipEditorAttributes as `attr:${K}`]?: XleEquipEditorAttributes[K] } & { [K in keyof XleEquipEditor & keyof XleEquipEditorAttributes as `prop:${K}`]?: XleEquipEditor[K] };
-        "xle-equip-list": XleEquipList;
+        "xle-equip-list": Omit<XleEquipList, keyof XleEquipListAttributes> & { [K in keyof XleEquipList & keyof XleEquipListAttributes]?: XleEquipList[K] } & { [K in keyof XleEquipList & keyof XleEquipListAttributes as `attr:${K}`]?: XleEquipListAttributes[K] } & { [K in keyof XleEquipList & keyof XleEquipListAttributes as `prop:${K}`]?: XleEquipList[K] };
     }
 }
 export { LocalJSX as JSX };

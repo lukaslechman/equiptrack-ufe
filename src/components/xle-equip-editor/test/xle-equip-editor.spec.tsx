@@ -10,7 +10,12 @@ describe('xle-equip-editor', () => {
     expect(page.root).toEqualHtml(`
       <xle-equip-editor>
         <mock:shadow-root>
-          <slot></slot>
+          <div class="error">
+            Nepodarilo sa načítať záznam: Required parameter requestParameters.equipmentId was null or undefined when calling getEquipment.
+          </div>
+          <md-outlined-button>
+            Späť
+          </md-outlined-button>
         </mock:shadow-root>
       </xle-equip-editor>
     `);

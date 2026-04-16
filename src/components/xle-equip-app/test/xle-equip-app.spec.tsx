@@ -10,7 +10,13 @@ describe('xle-equip-app', () => {
     expect(page.root).toEqualHtml(`
       <xle-equip-app>
         <mock:shadow-root>
-          <slot></slot>
+          <header class="app-header">
+            <md-icon>inventory_2</md-icon>
+            <span>Majetková evidencia</span>
+          </header>
+          <main>
+            <xle-equip-list></xle-equip-list>
+          </main>
         </mock:shadow-root>
       </xle-equip-app>
     `);
