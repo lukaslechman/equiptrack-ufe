@@ -26,52 +26,50 @@ export class XleEquipEditor {
   private formElement: HTMLFormElement;
 
 
-  async componentWillLoad() {
-    if (this.entryId === "@new") {
-      this.entry = {
-        id: "@new", name: "", category: "imaging",
-        manufacturer: "", serialNumber: "",
-        purchaseDate: "",    // ← string pre input field
-        warrantyUntil: "",
-        lifespanYears: 5, purchasePrice: 0,
-        status: "active", note: "",
-        location: { building: "", department: "", room: "" }
-      };
-      return;
-    }
-
-    this.isLoading = true;
-    try {
-      const api = new EquipmentRegistryApi(
-        new Configuration({ basePath: this.apiBase })
-      );
-      const response = await api.getEquipmentRaw({ equipmentId: this.entryId });
-      if (response.raw.status < 299) {
-        const data = await response.value();
-        // konvertuj Date objekty späť na stringy pre input field
-        this.entry = {
-          ...data,
-          purchaseDate: data.purchaseDate 
-            ? (data.purchaseDate instanceof Date 
-                ? data.purchaseDate.toISOString().split('T')[0]
-                : String(data.purchaseDate))
-            : "",
-          warrantyUntil: data.warrantyUntil
-            ? (data.warrantyUntil instanceof Date
-                ? data.warrantyUntil.toISOString().split('T')[0]
-                : String(data.warrantyUntil))
-            : "",
-        };
-        this.isValid = true;
-      } else {
-        this.errorMessage = `Chyba ${response.raw.status}: ${response.raw.statusText}`;
-      }
-    } catch (err: any) {
-      this.loadError  = `Nepodarilo sa načítať: ${err.message || "unknown"}`;
-    } finally {
-      this.isLoading = false;
-    }
+async componentWillLoad() {
+  if (this.entryId === "@new") {
+    this.entry = {
+      id: "@new", name: "", category: "imaging",
+      manufacturer: "", serialNumber: "",
+      purchaseDate: "", warrantyUntil: "",
+      lifespanYears: 5, purchasePrice: 0,
+      status: "active", note: "",
+      location: { building: "", department: "", room: "" }
+    };
+    return;
   }
+
+  this.isLoading = true;
+  try {
+    const api = new EquipmentRegistryApi(
+      new Configuration({ basePath: this.apiBase })
+    );
+    const response = await api.getEquipmentRaw({ equipmentId: this.entryId });
+    if (response.raw.status < 299) {
+      const data = await response.value();
+      this.entry = {
+        ...data,
+        purchaseDate: data.purchaseDate
+          ? (data.purchaseDate instanceof Date
+              ? data.purchaseDate.toISOString().split('T')[0]
+              : String(data.purchaseDate))
+          : "",
+        warrantyUntil: data.warrantyUntil
+          ? (data.warrantyUntil instanceof Date
+              ? data.warrantyUntil.toISOString().split('T')[0]
+              : String(data.warrantyUntil))
+          : "",
+      };
+      this.isValid = true;
+    } else {
+      this.loadError = `Chyba ${response.raw.status}: ${response.raw.statusText}`;
+    }
+  } catch (err: any) {
+    this.loadError = `Nepodarilo sa načítať: ${err.message || "unknown"}`;
+  } finally {
+    this.isLoading = false;
+  }
+}
 
   private async saveEntry() {
   if (!this.validateForm('show-errors')) return;
@@ -119,74 +117,24 @@ export class XleEquipEditor {
   }
 
   private validateForm(mode: 'silent' | 'show-errors'): boolean {
-    this.isValid = true;
-    if (!this.formElement) return false;
+  this.isValid = true;
+  if (!this.formElement) return false;
 
-    // Material Web checkValidity
-    for (let i = 0; i < this.formElement.children.length; i++) {
-      const el = this.formElement.children[i] as HTMLElement & {
-        checkValidity?: () => boolean;
-        reportValidity?: () => boolean;
-      };
-      let valid = true;
-      if (mode === 'show-errors' && el.reportValidity) {
-        valid = el.reportValidity();
-      } else if (el.checkValidity) {
-        valid = el.checkValidity();
-      }
-      this.isValid &&= valid;
+  for (let i = 0; i < this.formElement.children.length; i++) {
+    const el = this.formElement.children[i] as HTMLElement & {
+      checkValidity?: () => boolean;
+      reportValidity?: () => boolean;
+    };
+    let valid = true;
+    if (mode === 'show-errors' && el.reportValidity) {
+      valid = el.reportValidity();   
+    } else if (el.checkValidity) {
+      valid = el.checkValidity();
     }
-
-    // manuálna validácia povinných polí
-    if (!this.entry?.name || this.entry.name.trim() === "") {
-      this.errorMessage = "Názov vybavenia je povinný";
-      this.isValid = false;
-      return false;
-    }
-    if (!this.entry?.manufacturer || this.entry.manufacturer.trim() === "") {
-      this.errorMessage = "Výrobca je povinný";
-      this.isValid = false;
-      return false;
-    }
-    if (!this.entry?.serialNumber || this.entry.serialNumber.trim() === "") {
-      this.errorMessage = "Sériové číslo je povinné";
-      this.isValid = false;
-      return false;
-    }
-    if (!this.entry?.purchaseDate || this.entry.purchaseDate === "") {
-      this.errorMessage = "Dátum nákupu je povinný";
-      this.isValid = false;
-      return false;
-    }
-
-    // cross-field validácie
-    if (this.entry?.warrantyUntil && this.entry?.purchaseDate) {
-      if (this.entry.warrantyUntil < this.entry.purchaseDate) {
-        this.errorMessage = "Dátum záruky nemôže byť pred dátumom nákupu";
-        this.isValid = false;
-        return false;
-      }
-    }
-
-    const today = new Date().toISOString().split('T')[0];
-    if (this.entry?.purchaseDate > today) {
-      this.errorMessage = "Dátum nákupu nemôže byť v budúcnosti";
-      this.isValid = false;
-      return false;
-    }
-
-    if (this.entry?.purchasePrice < 0) {
-      this.errorMessage = "Obstarávacia cena nemôže byť záporná";
-      this.isValid = false;
-      return false;
-    }
-
-    if (this.isValid) {
-      this.errorMessage = undefined;
-    }
-
-    return this.isValid;
+    this.isValid &&= valid;
   }
+  return this.isValid;
+}
 
 
 
@@ -423,12 +371,6 @@ private async deleteEntry() {
 
         </form>
 
-        {this.errorMessage && (
-          <div class="save-error">
-            <md-icon>error</md-icon>
-            {this.errorMessage}
-          </div>
-        )}
         
         {/* Akcie */}
         <div class="actions">
