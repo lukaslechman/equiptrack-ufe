@@ -11,7 +11,7 @@ describe('xle-equip-editor', () => {
       <xle-equip-editor>
         <mock:shadow-root>
           <div class="error">
-            Nepodarilo sa načítať záznam: Required parameter requestParameters.equipmentId was null or undefined when calling getEquipment.
+            Nepodarilo sa načítať: Required parameter requestParameters.equipmentId was null or undefined when calling getEquipment.
           </div>
           <md-outlined-button>
             Späť
