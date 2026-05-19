@@ -84,11 +84,11 @@ export class XleEquipEditor {
     // konvertuj date stringy na Date objekty
     const entryToSave = {
       ...this.entry,
-      purchaseDate: this.entry.purchaseDate 
-        ? new Date(this.entry.purchaseDate) 
+      purchaseDate: this.entry.purchaseDate && this.entry.purchaseDate !== ""
+        ? new Date(this.entry.purchaseDate)
         : undefined,
-      warrantyUntil: this.entry.warrantyUntil 
-        ? new Date(this.entry.warrantyUntil) 
+      warrantyUntil: this.entry.warrantyUntil && this.entry.warrantyUntil !== ""
+        ? new Date(this.entry.warrantyUntil)
         : undefined,
     };
 
@@ -122,6 +122,7 @@ export class XleEquipEditor {
     this.isValid = true;
     if (!this.formElement) return false;
 
+    // Material Web checkValidity
     for (let i = 0; i < this.formElement.children.length; i++) {
       const el = this.formElement.children[i] as HTMLElement & {
         checkValidity?: () => boolean;
@@ -136,6 +137,29 @@ export class XleEquipEditor {
       this.isValid &&= valid;
     }
 
+    // manuálna validácia povinných polí
+    if (!this.entry?.name || this.entry.name.trim() === "") {
+      this.errorMessage = "Názov vybavenia je povinný";
+      this.isValid = false;
+      return false;
+    }
+    if (!this.entry?.manufacturer || this.entry.manufacturer.trim() === "") {
+      this.errorMessage = "Výrobca je povinný";
+      this.isValid = false;
+      return false;
+    }
+    if (!this.entry?.serialNumber || this.entry.serialNumber.trim() === "") {
+      this.errorMessage = "Sériové číslo je povinné";
+      this.isValid = false;
+      return false;
+    }
+    if (!this.entry?.purchaseDate || this.entry.purchaseDate === "") {
+      this.errorMessage = "Dátum nákupu je povinný";
+      this.isValid = false;
+      return false;
+    }
+
+    // cross-field validácie
     if (this.entry?.warrantyUntil && this.entry?.purchaseDate) {
       if (this.entry.warrantyUntil < this.entry.purchaseDate) {
         this.errorMessage = "Dátum záruky nemôže byť pred dátumom nákupu";
@@ -144,13 +168,11 @@ export class XleEquipEditor {
       }
     }
 
-    if (this.entry?.purchaseDate) {
-      const today = new Date().toISOString().split('T')[0];
-      if (this.entry.purchaseDate > today) {
-        this.errorMessage = "Dátum nákupu nemôže byť v budúcnosti";
-        this.isValid = false;
-        return false;
-      }
+    const today = new Date().toISOString().split('T')[0];
+    if (this.entry?.purchaseDate > today) {
+      this.errorMessage = "Dátum nákupu nemôže byť v budúcnosti";
+      this.isValid = false;
+      return false;
     }
 
     if (this.entry?.purchasePrice < 0) {
