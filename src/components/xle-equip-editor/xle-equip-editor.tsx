@@ -14,6 +14,7 @@ export class XleEquipEditor {
   @Event({ eventName: "editor-closed" }) editorClosed: EventEmitter<string>;
 
   @State() entry: any;
+  @State() loadError: string; 
   @State() errorMessage: string;
   @State() isValid: boolean = false;
   @State() showArchiveDialog: boolean = false;
@@ -66,7 +67,7 @@ export class XleEquipEditor {
         this.errorMessage = `Chyba ${response.raw.status}: ${response.raw.statusText}`;
       }
     } catch (err: any) {
-      this.errorMessage = `Nepodarilo sa načítať: ${err.message || "unknown"}`;
+      this.loadError  = `Nepodarilo sa načítať: ${err.message || "unknown"}`;
     } finally {
       this.isLoading = false;
     }
@@ -219,16 +220,16 @@ private async deleteEntry() {
         );
       }
 
-      if (this.errorMessage) {
-        return (
-          <Host>
-            <div class="error">{this.errorMessage}</div>
-            <md-outlined-button onClick={() => this.editorClosed.emit("cancel")}>
-              Späť
-            </md-outlined-button>
-          </Host>
-        );
-      }
+      if (this.loadError) {
+          return (
+            <Host>
+              <div class="error">{this.loadError}</div>
+              <md-outlined-button onClick={() => this.editorClosed.emit("cancel")}>
+                Späť
+              </md-outlined-button>
+            </Host>
+          );
+      }   
 
     return (
       <Host>
@@ -239,7 +240,6 @@ private async deleteEntry() {
 
         <form ref={el => this.formElement = el}>
 
-          {/* Základné info */}
           <section class="form-section">
             <h3>Základné informácie</h3>
 
@@ -401,6 +401,13 @@ private async deleteEntry() {
 
         </form>
 
+        {this.errorMessage && (
+          <div class="save-error">
+            <md-icon>error</md-icon>
+            {this.errorMessage}
+          </div>
+        )}
+        
         {/* Akcie */}
         <div class="actions">
           <md-filled-tonal-button

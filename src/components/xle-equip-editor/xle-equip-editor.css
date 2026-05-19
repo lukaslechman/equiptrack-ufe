@@ -52,3 +52,14 @@ md-filled-select {
   --md-filled-tonal-button-container-color: #ffcdd2;
   --md-filled-tonal-button-label-text-color: #b71c1c;
 }
+
+.save-error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: #ffcdd2;
+  color: #b71c1c;
+  border-radius: 8px;
+  margin-top: 1rem;
+}
