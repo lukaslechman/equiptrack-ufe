@@ -25,7 +25,7 @@ export class XleEquipList {
       const config = new Configuration({ basePath: this.apiBase });
       const api = new EquipmentRegistryApi(config);
       const response = await api.listEquipmentRaw({
-        status: this.filterStatus || undefined,
+        status: this.filterStatus as any || undefined,
         category: this.filterCategory || undefined,
       });
       if (response.raw.status < 299) {
