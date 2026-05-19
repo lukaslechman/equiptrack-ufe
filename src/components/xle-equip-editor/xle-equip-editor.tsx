@@ -18,34 +18,90 @@ export class XleEquipEditor {
   @State() isValid: boolean = false;
   @State() showArchiveDialog: boolean = false;
   @State() showDeleteDialog: boolean = false; 
+  @State() isLoading: boolean = false;
+
+
 
   private formElement: HTMLFormElement;
 
-async componentWillLoad() {
-  if (this.entryId === "@new") {
-    this.entry = {
-      id: "@new", name: "", category: "imaging",
-      manufacturer: "", serialNumber: "",
-      purchaseDate: "", status: "active", note: "",
-      location: { building: "", department: "", room: "" }
-    };
-    this.isValid = false;
-    return;
+
+  async componentWillLoad() {
+    if (this.entryId === "@new") {
+      this.entry = {
+        id: "@new", name: "", category: "imaging",
+        manufacturer: "", serialNumber: "",
+        purchaseDate: "",    // ← string pre input field
+        warrantyUntil: "",
+        lifespanYears: 5, purchasePrice: 0,
+        status: "active", note: "",
+        location: { building: "", department: "", room: "" }
+      };
+      return;
+    }
+
+    this.isLoading = true;
+    try {
+      const api = new EquipmentRegistryApi(
+        new Configuration({ basePath: this.apiBase })
+      );
+      const response = await api.getEquipmentRaw({ equipmentId: this.entryId });
+      if (response.raw.status < 299) {
+        const data = await response.value();
+        // konvertuj Date objekty späť na stringy pre input field
+        this.entry = {
+          ...data,
+          purchaseDate: data.purchaseDate 
+            ? (data.purchaseDate instanceof Date 
+                ? data.purchaseDate.toISOString().split('T')[0]
+                : String(data.purchaseDate))
+            : "",
+          warrantyUntil: data.warrantyUntil
+            ? (data.warrantyUntil instanceof Date
+                ? data.warrantyUntil.toISOString().split('T')[0]
+                : String(data.warrantyUntil))
+            : "",
+        };
+        this.isValid = true;
+      } else {
+        this.errorMessage = `Chyba ${response.raw.status}: ${response.raw.statusText}`;
+      }
+    } catch (err: any) {
+      this.errorMessage = `Nepodarilo sa načítať: ${err.message || "unknown"}`;
+    } finally {
+      this.isLoading = false;
+    }
   }
+
+  private async saveEntry() {
+  if (!this.validateForm('show-errors')) return;
 
   try {
     const api = new EquipmentRegistryApi(
       new Configuration({ basePath: this.apiBase })
     );
-    const response = await api.getEquipmentRaw({ equipmentId: this.entryId });
+
+    // konvertuj date stringy na Date objekty
+    const entryToSave = {
+      ...this.entry,
+      purchaseDate: this.entry.purchaseDate 
+        ? new Date(this.entry.purchaseDate) 
+        : undefined,
+      warrantyUntil: this.entry.warrantyUntil 
+        ? new Date(this.entry.warrantyUntil) 
+        : undefined,
+    };
+
+    const response = this.entryId === "@new"
+      ? await api.createEquipmentRaw({ equipment: entryToSave })
+      : await api.updateEquipmentRaw({ equipmentId: this.entryId, equipment: entryToSave });
+
     if (response.raw.status < 299) {
-      this.entry = await response.value();
-      this.isValid = true;
+      this.editorClosed.emit("store");
     } else {
-      this.errorMessage = `Nepodarilo sa načítať záznam: ${response.raw.statusText}`;
+      this.errorMessage = `Nepodarilo sa uložiť: ${response.raw.statusText}`;
     }
   } catch (err: any) {
-    this.errorMessage = `Nepodarilo sa načítať záznam: ${err.message || "unknown"}`;
+    this.errorMessage = `Nepodarilo sa uložiť: ${err.message || "unknown"}`;
   }
 }
 
@@ -81,25 +137,7 @@ async componentWillLoad() {
     return this.isValid;
   }
 
-private async saveEntry() {
-  if (!this.validateForm('show-errors')) return;
-  try {
-    const api = new EquipmentRegistryApi(
-      new Configuration({ basePath: this.apiBase })
-    );
-    const response = this.entryId === "@new"
-      ? await api.createEquipmentRaw({ equipment: this.entry })
-      : await api.updateEquipmentRaw({ equipmentId: this.entryId, equipment: this.entry });
 
-    if (response.raw.status < 299) {
-      this.editorClosed.emit("store");
-    } else {
-      this.errorMessage = `Nepodarilo sa uložiť: ${response.raw.statusText}`;
-    }
-  } catch (err: any) {
-    this.errorMessage = `Nepodarilo sa uložiť: ${err.message || "unknown"}`;
-  }
-}
 
 private async archiveEntry() {
   try {
@@ -142,16 +180,27 @@ private async deleteEntry() {
 
 
   render() {
-    if (this.errorMessage) {
-      return (
-        <Host>
-          <div class="error">{this.errorMessage}</div>
-          <md-outlined-button onClick={() => this.editorClosed.emit("cancel")}>
-            Späť
-          </md-outlined-button>
-        </Host>
-      );
-    }
+
+      if (this.isLoading) {
+        return (
+          <Host>
+            <div class="loading">
+              <span>Načítavam...</span>
+            </div>
+          </Host>
+        );
+      }
+
+      if (this.errorMessage) {
+        return (
+          <Host>
+            <div class="error">{this.errorMessage}</div>
+            <md-outlined-button onClick={() => this.editorClosed.emit("cancel")}>
+              Späť
+            </md-outlined-button>
+          </Host>
+        );
+      }
 
     return (
       <Host>
@@ -168,6 +217,7 @@ private async deleteEntry() {
 
             <md-filled-text-field
               label="Názov vybavenia" required
+              pattern=".*\S.*"
               value={this.entry?.name}
               oninput={(ev: InputEvent) =>
                 this.handleInput('name', (ev.target as HTMLInputElement).value)
@@ -201,6 +251,7 @@ private async deleteEntry() {
 
             <md-filled-text-field
               label="Výrobca" required
+              pattern=".*\S.*"
               value={this.entry?.manufacturer}
               oninput={(ev: InputEvent) =>
                 this.handleInput('manufacturer', (ev.target as HTMLInputElement).value)
@@ -210,6 +261,8 @@ private async deleteEntry() {
 
             <md-filled-text-field
               label="Sériové číslo" required
+              pattern="[A-Za-z0-9\-]+"
+
               value={this.entry?.serialNumber}
               oninput={(ev: InputEvent) =>
                 this.handleInput('serialNumber', (ev.target as HTMLInputElement).value)
@@ -236,16 +289,23 @@ private async deleteEntry() {
             <md-filled-text-field
               label="Záruka do" type="date"
               value={this.entry?.warrantyUntil}
-              oninput={(ev: InputEvent) =>
-                this.handleInput('warrantyUntil', (ev.target as HTMLInputElement).value)
-              }>
+              oninput={(ev: InputEvent) => {
+                  const val = (ev.target as HTMLInputElement).value;
+                  const el = ev.target as HTMLInputElement & { setCustomValidity: (s: string) => void };
+                  if (this.entry?.purchaseDate && val < this.entry.purchaseDate) {
+                    el.setCustomValidity('Záruka nemôže byť pred dátumom nákupu');
+                  } else {
+                    el.setCustomValidity('');
+                  }
+                  this.handleInput('warrantyUntil', val);
+                }}>
               <md-icon slot="leading-icon">verified_user</md-icon>
             </md-filled-text-field>
 
             <md-filled-text-field
               label="Životnosť (roky)" type="number"
               min="2"
-              value={String(this.entry?.lifespanYears)}
+              value={String(this.entry?.lifespanYears??2)}
               oninput={(ev: InputEvent) =>
                 this.handleInput('lifespanYears', (ev.target as HTMLInputElement).value)
               }>
@@ -254,8 +314,8 @@ private async deleteEntry() {
 
             <md-filled-text-field
               label="Obstarávacia cena (€)" type="number"
-              min="50"
-              value={String(this.entry?.purchasePrice)}
+              min="0"
+              value={String(this.entry?.purchasePrice ?? 0)}
               oninput={(ev: InputEvent) =>
                 this.handleInput('purchasePrice', (ev.target as HTMLInputElement).value)
               }>
