@@ -134,6 +134,34 @@ export class XleEquipEditor {
       }
       this.isValid &&= valid;
     }
+
+    if (this.entry?.warrantyUntil && this.entry?.purchaseDate) {
+      if (this.entry.warrantyUntil < this.entry.purchaseDate) {
+        this.errorMessage = "Dátum záruky nemôže byť pred dátumom nákupu";
+        this.isValid = false;
+        return false;
+      }
+    }
+
+    if (this.entry?.purchaseDate) {
+      const today = new Date().toISOString().split('T')[0];
+      if (this.entry.purchaseDate > today) {
+        this.errorMessage = "Dátum nákupu nemôže byť v budúcnosti";
+        this.isValid = false;
+        return false;
+      }
+    }
+
+    if (this.entry?.purchasePrice < 0) {
+      this.errorMessage = "Obstarávacia cena nemôže byť záporná";
+      this.isValid = false;
+      return false;
+    }
+
+    if (this.isValid) {
+      this.errorMessage = undefined;
+    }
+
     return this.isValid;
   }
 
